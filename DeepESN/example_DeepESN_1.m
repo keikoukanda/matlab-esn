@@ -90,6 +90,7 @@ fprintf('Selected value of rho = %f.\n',rho_values(selected_rho));
 fprintf('MC score on the training set = %f (%f).\n',mean(MC_score_design),std(MC_score_design));
 fprintf('MC score on the test set = %f (%f).\n',mean(MC_score_test),std(MC_score_test));   
 
+%% visualize
 
 %%%%=================%%%%
 %plot MC
