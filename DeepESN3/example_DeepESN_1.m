@@ -18,15 +18,12 @@ function example_DeepESN_1
 %Reference article:
 %C. Gallicchio, A. Micheli, L. Pedrelli, "Deep Reservoir Computing: A
 %Critical Experimental Analysis", Neurocomputing, 2017, vol. 268, pp. 87-99
-
 %default option use load following line
 % load MC100.mat task %loads the task data and folds description
-
 
 % alternatively, create the task obkect (uncomment the following line)
 % task = example_task_MC();
 task = narma_x_task();
-
 
 repetitions = 5; %number of network gueses for each reservoir hyper-parametrization
 rho_values = 0.9; %explored values of the spectral radius

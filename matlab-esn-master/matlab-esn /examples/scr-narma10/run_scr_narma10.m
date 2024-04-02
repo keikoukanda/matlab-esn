@@ -1,7 +1,9 @@
 addpath(genpath('../../../'))
 
+%% i change rng seed here
 randnum = rng('shuffle');
 
+%%
 inputw = [.1];
 resw = [0.8];
 timeLen =2100;
@@ -41,12 +43,15 @@ net = net.initConn();
 
 % generate narma 10 data
 inputs.data = rand(2*timeLen,1)*0.5;
+writematrix(inputs.data, 'input_data_outside1.csv');
 while isinf(mean(narmax(inputs.data,10,0)))
     inputs.data = rand(2*timeLen,1)*0.5;
 end  
+writematrix(inputs.data, 'input_data_inside1.csv');
 
 %initialize input stream
 input = inputs.data(1:timeLen,1);
+writematrix(input, 'input_data_after1.csv');
 input = prepInput(input',tranLen)';
 % initialize network states
 net = net.initState();
@@ -72,6 +77,9 @@ net = net.test(narmax(input,10,0));
 
 % calculate error from offset 200
 [ e, MSE, NMSE, RNMSE, NRMSE, SAMP ] = net.getErr(200);
+
+writematrix(net.targets, 'targets.csv');
+writematrix(net.results{2},'targets1.csv')
 NMSE
 %% visualize
 
