@@ -1,12 +1,13 @@
 addpath(genpath('../../../'))
 
 %% i change rng seed here
-randnum = rng('shuffle');
+randnum = rng(1);
 
-%%
+
 inputw = [.1];
 resw = [0.8];
-timeLen =2100;
+% default teimeLen = 2100;
+timeLen = 6000;
 N=100;
 in_dim = 1;out_dim = 1;
 tranLen = 100;
@@ -43,15 +44,16 @@ net = net.initConn();
 
 % generate narma 10 data
 inputs.data = rand(2*timeLen,1)*0.5;
-writematrix(inputs.data, 'input_data_outside1.csv');
+
+% writematrix(inputs.data, 'input_data_outside1.csv');
 while isinf(mean(narmax(inputs.data,10,0)))
     inputs.data = rand(2*timeLen,1)*0.5;
 end  
-writematrix(inputs.data, 'input_data_inside1.csv');
+% writematrix(inputs.data, 'input_data.csv');
 
 %initialize input stream
 input = inputs.data(1:timeLen,1);
-writematrix(input, 'input_data_after1.csv');
+writematrix(input, 'input_data.csv');
 input = prepInput(input',tranLen)';
 % initialize network states
 net = net.initState();
@@ -78,8 +80,12 @@ net = net.test(narmax(input,10,0));
 % calculate error from offset 200
 [ e, MSE, NMSE, RNMSE, NRMSE, SAMP ] = net.getErr(200);
 
-writematrix(net.targets, 'targets.csv');
-writematrix(net.results{2},'targets1.csv')
+% i will use this net.targets for DeepESN
+writematrix(net.targets, 'target_data.csv');
+
+% % net.results{2} = target data after cropping washout part
+% % e.g., net.results{2} = original_target_data(100:timeLen)
+% writematrix(net.results{2},'targets1.csv')
 NMSE
 %% visualize
 
@@ -87,7 +93,7 @@ visLen = 200;
 offset = 100;
 timeidx = [1:visLen]+offset;
 
-px = 2; py=3;
+px = 2; py=3; %subplot
 subplot(py,px,1)        
 plot(net.results{3}(timeidx,:))
 title('input')
