@@ -18,7 +18,7 @@ classdef Task < handle
         name %A string name for the task
         input %Nu x Nt matrix where each column represents an input pattern. In particular,
               %input(:,t) is the input pattern at time step t.
-        target %Ny x Nt matrix where each column represents a target pattern. In particular
+         target %Ny x Nt matrix where each column represents a target pattern. In particular
                %target(:,t) is the target pattern at time step t.
         folds %A Nf x 1 cell structure where each element describes the splitting of the available data
               %for cross-fold validation purposes. In particular, double cross-fold validation is

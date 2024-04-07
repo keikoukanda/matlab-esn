@@ -24,8 +24,8 @@ function example_DeepESN_1
 task = example_task_MC(); 
 
 
-repetitions = 5; %number of network gueses for each reservoir hyper-parametrization
-rho_values = [0.1 0.5 0.9]; %explored values of the spectral radius
+repetitions = 1; %number of network gueses for each reservoir hyper-parametrization
+rho_values = 0.9; %explored values of the spectral radius
 MC_score_validation = cell(length(rho_values),1);%to contain the MC scores on the validation set for all the explored hyper-parametrizations
 networks = cell(length(rho_values),repetitions); %to contain the initialized DeepESNs explored in the model selection phase
 
@@ -81,12 +81,19 @@ for i = 1:repetitions
     %compute the scores on the design set and on the test set
     MC_score_design(i) = DeepESN.MCscore(task.target(:,task.folds{1}.design(net.washout+1:end)),output_tr);
     MC_score_test(i) = DeepESN.MCscore(task.target(:,task.folds{1}.test),output_ts);
+
 end
 
-% calculate error from offset 200
-[ e, MSE, NMSE, RNMSE, NRMSE, SAMP ] = net.getErr(200);
-
-NMSE
+% visLen = 200;
+% offset = 100;
+% timeidx = [1:visLen]+offset;
+% plot([DeepESN.output1(timeidx,:) DeepESN.target1(timeidx,:)])
+%         legend('output','target');
+% calculate e
+% visrror from offset 200
+% [ e, MSE, NMSE, RNMSE, NRMSE, SAMP ] = net.getErr(200);
+% 
+% NMSE
 %% visualize
 
 % visLen = 200;
