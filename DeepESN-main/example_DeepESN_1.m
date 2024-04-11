@@ -24,7 +24,7 @@ function example_DeepESN_1
 task = example_task_MC(); 
 
 
-repetitions = 10; %number of network gueses for each reservoir hyper-parametrization
+repetitions = 1; %number of network gueses for each reservoir hyper-parametrization
 rho_values = [0.1 0.5 0.9]; %explored values of the spectral radius
 MC_score_validation = cell(length(rho_values),1);%to contain the MC scores on the validation set for all the explored hyper-parametrizations
 networks = cell(length(rho_values),repetitions); %to contain the initialized DeepESNs explored in the model selection phase

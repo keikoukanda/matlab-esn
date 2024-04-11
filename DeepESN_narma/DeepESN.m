@@ -71,120 +71,232 @@ classdef DeepESN < handle
             self.target1 = [];
             end
         
-        function self = DeepESN()
-        %Class constructor. Set all the DeepESN properties to the default values
-        self.default();
-        end
-        
-        
-        function init_state(self)
-        %(Re-)initialize the state in each layer of the deep reservoir to initial_state
-        for layer = 1:self.Nl
-            self.state{layer} = self.initial_state;
-            self.l_state{layer} = [];
-            self.run_states{layer} = [];
+            function self = DeepESN()
+            self.default();
+            end
             
-        end
-        end
-        function initialize(self)
-        %Initialize the deep reservoir of the DeepESN. This involves (i) setting up all the weight
-        %matrices, and (ii) setting up the state of the deep reservoir
-        
-        %initialize the input-reservoir weight matrix
-        self.Win = 2*rand(self.Nr,self.Nu+1)-1;
-        %scale the input-to-reservoir weight matrix
-        switch self.input_scaling_mode
-            case 'bynorm'
-                self.Win = self.input_scaling * self.Win / norm(self.Win);
-            case 'byrange'
-                self.Win = self.Win * self.input_scaling;
-        end
-        
-        %initialize the inter-reservoir weight matrices
-        for i = 2:self.Nl
-            %initialization of the i-th inter-layer weight matrix
-            self.Wil{i} = 2*rand(self.Nr,self.Nr+1)-1;
-            %scaling of the i-th inter-layer weight matrix
+            
+            function init_state(self)
+            for layer = 1:self.Nl
+                self.state{layer} = self.initial_state;
+                self.l_state{layer} = [];
+                self.run_states{layer} = [];
+                
+            end
+            end
+            function initialize(self)
+            %initialize the input-reservoir weight matrix
+            self.Win = 2*rand(self.Nr,self.Nu+1)-1;
+            %scale the input-to-reservoir weight matrix
             switch self.input_scaling_mode
                 case 'bynorm'
-                    self.Wil{i} = self.inter_scaling * self.Wil{i} / norm(self.Wil{i});
+                    self.Win = self.input_scaling * self.Win / norm(self.Win);
                 case 'byrange'
-                    self.Wil{i} = self.Wil{i} * self.inter_scaling;
+                    self.Win = self.Win * self.input_scaling;
             end
-        end
-        
-        %initialize the recurrent reservoir weight matrices
-        for i = 1:self.Nl
-            %initialization of the i-th recurrent weight matrix
-            self.W{i} = 2*rand(self.Nr,self.Nr)-1;
-            %scaling of the i-th recurrent weight matrix
-            I = eye(self.Nr);
-            Wt = (1-self.leaking_rate) * I + self.leaking_rate * self.W{i};
-            Wt = self.spectral_radius * Wt / max(abs(eig(Wt)));
-            self.W{i} = (Wt - (1-self.leaking_rate) * I)/self.leaking_rate;
-        end
-        
-        %initialize the state of the reservoir in each layer to a zero state
-        self.initial_state = zeros(self.Nr,1);
-        self.init_state();
-        %note: if you need to initialize the reservoir states to an initial condition different
-        %from the zero state, set the initial_state property to the desired initial conditions
-        %and then call the init_state() method
-        end
-
-        function states = run(self,input)
-        %Run the deep reservoir on the given input, returning the computed states.
-        %Note(s):
-        % - the execution of this function stores the computed states into the run_states property of
-        % the DeepESN object
-        % - this method does not reset the state of the reservoir to the initial conditions, call
-        % method init_state (before this method) if you need to reset the state to initial
-        % conditions before computing the reservoir states
-        %
-        % Parameter(s):
-        % - input: An Nu x Nt matrix representing the input time-series.
-        %          input(:,t) is input at time step t
-        % Returned value(s):
-        % - states: An Nlx1 cell containing the states computed by each layer of the deep reservoir.
-        %           For each layer l, states{l} is an Nr x Nt matrix. 
-        %           In particular, states{l}(:,t) is the state of the l-th reservoir layer at time step t
-        
-        Nt = size(input,2); %number of time steps in the input time-series
-        % prepare the self.run_states variable
-        for layer = 1:self.Nl
-            self.run_states{layer} = zeros(self.Nr,Nt);
-        end
-        
-        %run the deep reservoir on the given input
-        old_state = self.state; %this is the first state
-        for t = 1:Nt
-            % t - time step under consideration
-            for layer = 1:self.Nl
-                % layer - layer under consideration
-                x = old_state{layer}; %this plays the role of previous state
-                u = []; %input for this specific layer
-                %now focus on the specific input for the layer and compute the input_part in the
-                %state update equation
-                % (also the input bias is concatenated to the proper input)
-                input_part = [];
-                if layer == 1
-                    u = input(:,t); %only the first layer receives the external input
-                    input_part = self.Win * [u;self.bias];
-                else
-                    u = self.run_states{layer-1}(:,t); %successive layers receive in input
-                    %the output of the previous layer
-                    input_part = self.Wil{layer} * [u;self.bias];
+            
+            for i = 2:self.Nl
+                %initialization of the i-th inter-layer weight matrix
+                self.Wil{i} = 2*rand(self.Nr,self.Nr+1)-1;
+                %scaling of the i-th inter-layer weight matrix
+                switch self.input_scaling_mode
+                    case 'bynorm'
+                        self.Wil{i} = self.inter_scaling * self.Wil{i} / norm(self.Wil{i});
+                    case 'byrange'
+                        self.Wil{i} = self.Wil{i} * self.inter_scaling;
                 end
-                self.state{layer} = (1-self.leaking_rate) * x + self.f(input_part + self.W{layer} * x);
-                self.run_states{layer}(:,t) = self.state{layer};
-                old_state{layer} = self.state{layer};
+            end
+    
+            for i = 1:self.Nl
+                self.W{i} = 2*rand(self.Nr,self.Nr)-1;
+                I = eye(self.Nr);
+                Wt = (1-self.leaking_rate) * I + self.leaking_rate * self.W{i};
+                Wt = self.spectral_radius * Wt / max(abs(eig(Wt)));
+                self.W{i} = (Wt - (1-self.leaking_rate) * I)/self.leaking_rate;
+            end
+            self.initial_state = zeros(self.Nr,1);
+            self.init_state();
+            end
+    
+            function states = run(self,input)
+            Nt = size(input,2); %number of time steps in the input time-series
+            % prepare the self.run_states variable
+            for layer = 1:self.Nl
+                self.run_states{layer} = zeros(self.Nr,Nt);
+            end
+            
+            %run the deep reservoir on the given input
+            old_state = self.state; %this is the first state
+            for t = 1:Nt
+                % t - time step under consideration
+                for layer = 1:self.Nl
+                    % layer - layer under consideration
+                    x = old_state{layer}; %this plays the role of previous state
+                    u = [];
+                    input_part = [];
+                    if layer == 1
+                        u = input(1,t);
+                        input_part = self.Win * [u;self.bias];
+                    else
+                        u = self.run_states{layer-1}(:,t);
+                        %the output of the previous layer
+                        input_part = self.Wil{layer} * [u;self.bias];
+                    end
+                    self.state{layer} = (1-self.leaking_rate) * x + self.f(input_part + self.W{layer} * x);
+                    self.run_states{layer}(:,t) = self.state{layer};
+                    old_state{layer} = self.state{layer};
+                end
+            end
+            states = self.run_states;
+            end
+    
+    
+            % traing Wout here==
+            function self = train_readout(self,target)
+            X = self.shallow_states(self.run_states);
+            % remove the washout transient
+            X = X(:,self.washout+1:end);
+            target = target(:,self.washout+1:end);
+            % add the input bias
+            X = [X;self.bias * ones(1,size(X,2))];
+            if self.readout_regularization == 0
+                self.Wout = target * pinv(X);
+            else
+                self.Wout = target * X' / (X*X'+self.readout_regularization *eye(size(X,1)));
+            end
+            self.Ny = size(self.Wout,1); %also adjust the self.Ny value to the correct one given the target
+            end
+    
+            function states = train(self, input, target)
+            states = self.run(input);
+            self.train_readout(target);
+            end
+    
+            function output = compute_output(self,states,remove_washout)
+            states = self.shallow_states(states);
+            if remove_washout
+                states = states(:,self.washout+1:end);
+            end
+            output = self.Wout * [states;self.bias * ones(1,size(states,2))];
+            end  
+    
+            function [outputTR,outputTS] = train_test(self,input,target,training,test)
+            %initialize the state
+            self.init_state(); 
+            
+            %train the network
+            training_input = input(:,training);
+            training_target = target(:,training);
+            training_states = self.train(training_input,training_target);
+            
+            %compute the output of the model on the training set
+            outputTR = self.compute_output(training_states,1);
+            
+            %compute the output of the model on the assessment data
+            %first compute the states
+            test_input = input(:,test);
+            test_states = self.run(test_input); %here do not re-initialize the state
+            outputTS = self.compute_output(test_states,0);
+            end  
+        
+        end
+
+
+    % methods (Static)
+    %     function NRMSE = getErr(target, output)
+    %         % Set up initial parameters
+    %         num_time_steps = length(target);
+    %         e = zeros(num_time_steps, 1);
+    %         MSE = zeros(num_time_steps, 1);
+    %         NRMSE = zeros(num_time_steps, 1);
+    % 
+    %         for time = 1:num_time_steps
+    %             e(time) = output(time) - target(time);
+    %             MSE(time) = e(time)^2;
+    %         end
+    % 
+    %         mean_MSE = mean(MSE);
+    %         NRMSE = sqrt(mean_MSE) / (max(target) - min(target));
+    %     end
+    % end
+
+
+%         function NRMSE = getErr(target, output)
+%     % Set up initial parameters
+%     num_time_series = size(target, 2); % Assume target and output have the same length
+%     num_time_steps = size(target, 1);
+%     NRMSE = zeros(num_time_series, 1);
+%     % 
+% 
+% 
+% % % %plot the state of target and output
+% % % % Define the time range
+% % % time_range = 1:200;
+% % % 
+% % % % Plot the data within the time range
+% % % plot(time_range, target(time_range))
+% % % hold on
+% % % plot(time_range, output(time_range))
+% % % xlabel('Time-series')
+% % % ylabel('State')
+% % % legend('Target', 'Output')
+%                 e = zeros(num_time_series, 1);
+%                 MSE = zeros(num_time_series, 1);
+% 
+%                 for time = 1 : num_time_series
+%                     e(time) = output(time, serieime = 1:num_time_stepss) - target(time, series);
+%                     MSE(time) = e(time)^2;
+%                 end
+% 
+%                 mean_MSE = mean(MSE);
+%                 NRMSE(series) = sqrt(mean_MSE) / (max(target(:, series)) - ...
+%                     min(target(:, series)));
+%         end
+    methods (Static)
+        function nrmse_values = getErr(target, output)
+            %Compute the Mean Squared Error given target and output data.
+            target1 = target;
+            output1 = output;
+            [~, time_series] = size(target1);
+            nrmse_values = zeros(1, time_series);
+            mse_values = mean((target1 - output1).^2);
+            for i = 1:time_series
+                mean_value = mean(target1(:, i));
+                rmse_value = sqrt(mse_values);
+                nrmse_values(i) = rmse_value / mean_value;
+            end
+
+            plot(1:1000,target(1,:))
+            hold on
+            plot(1:1000,output(1,:))
+            title('output'); legend('target','output');
+
+                % plot(nrmse_values);
+                % title('NRMSE Plot');
+                % xlabel('Time Series');
+                % ylabel('NRMSE Value');
+        end
+    end
+        
+
+
+
+    
+    
+    methods (Access = private)
+        function X = shallow_states(self,states)
+        
+        Nt = size(states{1},2); %number of time steps
+        X = zeros(self.Nl * self.Nr,Nt); %this matrix will contain the input for the readout
+        %i.e., for each time step (column): the states computed at each layer of the reservoir
+        %concatenated along the rows dimension.
+        for t = 1:Nt
+            for layer = 1:self.Nl
+                X(1+(layer-1)*self.Nr:self.Nr+(layer-1)*self.Nr,t) = states{layer}(:,t);
             end
         end
-        states = self.run_states;
         end
+    end
 
-        
-
-        
-        end
+    
 end

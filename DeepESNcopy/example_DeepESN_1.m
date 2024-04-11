@@ -21,11 +21,11 @@ function example_DeepESN_1
 
 load MC100.mat task %loads the task data and folds description
 %alternatively, create the task obkect (uncomment the following line)
-%task = example_task_MC(); 
+% task = example_task_MC(); 
 
 
-repetitions = 5; %number of network gueses for each reservoir hyper-parametrization
-rho_values = 0.9; %explored values of the spectral radius
+repetitions = 1; %number of network gueses for each reservoir hyper-parametrization
+rho_values = [0.1 0.5 0.9]; %explored values of the spectral radius
 MC_score_validation = cell(length(rho_values),1);%to contain the MC scores on the validation set for all the explored hyper-parametrizations
 networks = cell(length(rho_values),repetitions); %to contain the initialized DeepESNs explored in the model selection phase
 
@@ -44,11 +44,11 @@ for i_rho = 1:length(rho_values)
         net.Nr = 10; %10 reservoir units
         net.Nl = 10; %10 reservoir layers
         %input scaling is set to 0.1, with scaling mode 'byrange'
-        net.input_scaling = 1;
-        net.inter_scaling = 1; %do the same also for the inter-layer scaling
+        net.input_scaling = 0.1;
+        net.inter_scaling = 0.1; %do the same also for the inter-layer scaling
         net.input_scaling_mode = 'byrange';
         net.washout = 1000; %1000 time steps long transient
-        d=zeros(size(task.target(:,task.folds{1}.test),1), repetitions);
+        % d=zeros(size(task.target(:,task.folds{1}.test),1), repetitions);
         % --------------------------------
         
         net.initialize; %initialize the DeepESN
@@ -82,7 +82,8 @@ for i = 1:repetitions
     [output_tr,output_ts] = networks{selected_rho,i}.train_test(task.input,task.target,task.folds{1}.design,task.folds{1}.test);
     %compute the scores on the design set and on the test set
     MC_score_design(i) = DeepESN.MCscore(task.target(:,task.folds{1}.design(net.washout+1:end)),output_tr);
-    [MC_score_test(i),d(:,i),delays] = DeepESN.MCscore(task.target(:,task.folds{1}.test),output_ts);
+    % [MC_score_test(i),d(:,i),delays] = DeepESN.MCscore(task.target(:,task.folds{1}.test),output_ts);
+    aaa = DeepESN.MSE(task.target(:,2001:end),output_tr);
 end
 
 %print a message to report the outcomes of the experiment
@@ -93,7 +94,7 @@ fprintf('MC score on the test set = %f (%f).\n',mean(MC_score_test),std(MC_score
 %% visualize
 
 %%%%=================%%%%
-%plot MC
+% % plot MC
 
 
 % MC_score_test is result of MC result in each repitation
@@ -102,16 +103,17 @@ fprintf('MC score on the test set = %f (%f).\n',mean(MC_score_test),std(MC_score
 %     semilogx(p,mean(MC_score_test));
 % end
 % plot([1:1:delays] , mean(d,2));
+% 
+% errorbar([1:1:delays] , mean(d,2), std(d, [] , 2)/sqrt(repetitions),'LineWidth',2);
+% 
 
-errorbar([1:1:delays] , mean(d,2), std(d, [] , 2)/sqrt(repetitions),'LineWidth',2);
-
-% % ++ design
-ylim([0 1])
-h_axes = gca;
-h_axes.XAxis.FontSize = 30;
-h_axes.YAxis.FontSize = 30;
-legend('scale = 0.1', 'scale = 1')
-hold on
+% % % ++ design
+% ylim([0 1])
+% h_axes = gca;
+% h_axes.XAxis.FontSize = 30;
+% h_axes.YAxis.FontSize = 30;
+% legend('scale = 0.1', 'scale = 1')
+% hold on
 % % % ++
 
 %plot MC

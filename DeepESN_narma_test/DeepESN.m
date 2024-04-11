@@ -48,9 +48,6 @@ classdef DeepESN < handle
 
         l_state % state of layer
         
-        output1
-        target1
-        
     end
     methods (Access = public)
         
@@ -82,8 +79,6 @@ classdef DeepESN < handle
         self.state = cell(self.Nl,1);
         self.l_state = cell(self.Nl,1);
 
-        self.output1 = [];
-        self.target1 = [];
         end
         
         function self = DeepESN()
@@ -291,7 +286,7 @@ classdef DeepESN < handle
             states = states(:,self.washout+1:end);
         end
         output = self.Wout * [states;self.bias * ones(1,size(states,2))];
-        writematrix(output, 'DeepESN_output.csv');
+        writematrix(output, 'DeepESN_output2.csv');
         end  
         
         
@@ -343,7 +338,7 @@ classdef DeepESN < handle
         function [ e, MSE, NMSE, RNMSE, NRMSE, SAMP ] = ...
                 getErr(self,skip)
             [ e, MSE, NMSE, RNMSE, NRMSE, SAMP ] =...
-                calcErr1(self.results{1}(skip:end,:),self.results{2}(skip:end,:));
+calcErr1(self.results{1}(skip:end,:),self.results{2}(skip:end,:));
         end
     end
     
@@ -360,7 +355,7 @@ classdef DeepESN < handle
         
         function [perf,d] = MCscore(target, output)
         %Compute the score for the Memory Capacity task, given target and output data
-        delays = size(target,1);
+        % delays = size(target,1);
         % for delay = 1:delays
         %     c = corrcoef(target(delay,:),output(delay,:));
         %     d(delay) = c(1,2)^2;
@@ -370,34 +365,25 @@ classdef DeepESN < handle
             e = zeros(num_time_steps, 1);
             MSE = zeros(num_time_steps, 1);
             NRMSE = zeros(num_time_steps, 1);
-            
+
             for time = 1:num_time_steps
                 % 各時刻の計算を行う
                 target_transposed = target';
                 output_transposed = output';
-                
+
                 e(time) = (output_transposed(time) - target_transposed(time));
-                
+
                 % MSEの計算
                 MSE(time) = mean(e(time).^2);
                 % NRMSEの計算
                 NRMSE(time) = sqrt(MSE(time))./(max(target_transposed(time))-min(target_transposed(time)));
             end
-            
+
             % プロット
             plot(NRMSE);
             title('Normalized Root Mean Square Error (NRMSE) over Time');
             xlabel('Time Steps');
             ylabel('NRMSE');
-
-            
-            % visLen = 200;
-            % offset = 100;
-            % timeidx = [1:visLen]+offset;
-            % plot([output_transposed(timeidx,:) target_transposed(timeidx,:)])
-            %         legend('output','target');
-        % end
-        % perf = sum(d);
         end
         
     end

@@ -83,7 +83,7 @@ classdef DeepESN < handle
         self.state = cell(self.Nl,1);
 
         %---- <<valuable
-        self.cstate = cell(self.Nl,1);
+        % self.cstate = cell(self.Nl,1);
         %---- <<valuable
 
         end
@@ -99,7 +99,7 @@ classdef DeepESN < handle
         for layer = 1:self.Nl
             self.state{layer} = self.initial_state;
             self.run_states{layer} = [];
-            self.cstate{layer} = [];
+            % self.cstate{layer} = [];
         end
         end
         
@@ -294,6 +294,8 @@ classdef DeepESN < handle
             states = states(:,self.washout+1:end);
         end
         output = self.Wout * [states;self.bias * ones(1,size(states,2))];
+
+        % writematrix(output, 'output.csv')
         end  
         
         
@@ -345,11 +347,47 @@ classdef DeepESN < handle
     
         
     methods (Static)
-        function perf = MSE(target, output)
+        % function perf = MSE(target, output)
+        function [target, output] = MSE(target, output)
         %Compute the Mean Squared Error given target and output data.
-        perf = mean((target-output).^2);
+        target1 = target;
+        output1 = output;
+
+        % データ数と時系列数を取得
+        [~, time_series] = size(target1);
+
+        % 各時系列のNRMSE値を格納する配列を初期化
+        nrmse_values = zeros(1, time_series);
+
+        % 各時系列に対してMSEを計算
+        mse_values = mean((target1 - output1).^2);
+
+        % 各時系列に対してNRMSEを計算
+        for i = 1:time_series
+            % 平均値を計算
+            mean_value = mean(target1(:, i));
+
+            % 平均二乗誤差の平方根を取得
+            rmse_value = sqrt(mse_values(i));
+
+            % 正規化平均二乗誤差（NRMSE）を計算して配列に格納
+            nrmse_values(i) = rmse_value / mean_value;
         end
-        
+
+        plot(nrmse_values);
+        title('NRMSE Plot');
+        xlabel('Time Series');
+        ylabel('NRMSE Value');
+
+        % test plot target and output====
+        % hold on
+        % plot(1:4000,target1(1,:))
+        % plot(1:4000,output1(1,:))
+        % title('output'); legend('target','output');
+        % test plot target and output====
+
+        end
+
         function [perf,d,delays] = MCscore(target, output)
         %Compute the score for the Memory Capacity task, given target and output data
         delays = size(target,1);

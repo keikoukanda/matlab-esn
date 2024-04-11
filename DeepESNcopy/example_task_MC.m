@@ -20,8 +20,8 @@ function task = example_task_MC
 
 task = Task(); %initialize the task
 task.set_name('MC100'); %set the name
-input_data = csvread('MC_input.csv'); %read the input data
-target_data = csvread('MC_target.csv'); %read the taregt data (i.e. the delayed versions of the input in this case)
+input_data = csvread('new_input_data1.csv'); %read the input data
+target_data = csvread('new_target_data.csv'); %read the taregt data (i.e. the delayed versions of the input in this case)
 task.set_data(input_data,target_data); %set the input and target data for the task
 task.set_holdout_folds(1:4000, 4001:5000, 1:5000, 5001:6000); %set the indices for training/validation/design/test
                                                               %for hold-out cross validation

@@ -19,13 +19,13 @@ function example_DeepESN_1
 %C. Gallicchio, A. Micheli, L. Pedrelli, "Deep Reservoir Computing: A
 %Critical Experimental Analysis", Neurocomputing, 2017, vol. 268, pp. 87-99
 
-% load MC100.mat task %loads the task data and folds description
+load MC100.mat task %loads the task data and folds description
 %alternatively, create the task obkect (uncomment the following line)
-task = example_task_MC(); 
+% task = example_task_MC(); 
 
 
 repetitions = 1; %number of network gueses for each reservoir hyper-parametrization
-rho_values = 0.9; %explored values of the spectral radius
+rho_values = 0.1; %explored values of the spectral radius
 MC_score_validation = cell(length(rho_values),1);%to contain the MC scores on the validation set for all the explored hyper-parametrizations
 networks = cell(length(rho_values),repetitions); %to contain the initialized DeepESNs explored in the model selection phase
 
@@ -43,8 +43,8 @@ for i_rho = 1:length(rho_values)
         net.Nr = 10; %10 reservoir units
         net.Nl = 10; %10 reservoir layers
         %input scaling is set to 0.1, with scaling mode 'byrange'
-        net.input_scaling = 0.1;
-        net.inter_scaling = 0.1; %do the same also for the inter-layer scaling
+        net.input_scaling = 1;
+        net.inter_scaling = 1; %do the same also for the inter-layer scaling
         net.input_scaling_mode = 'byrange';
         net.washout = 1000; %1000 time steps long transient
         % --------------------------------

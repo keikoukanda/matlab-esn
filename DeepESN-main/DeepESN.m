@@ -330,23 +330,23 @@ classdef DeepESN < handle
    
     
         
-    methods (Static)
-        function perf = MSE(target, output)
-        %Compute the Mean Squared Error given target and output data.
-        perf = mean((target-output).^2);
-        end
-        
-        function [perf,d] = MCscore(target, output)
-        %Compute the score for the Memory Capacity task, given target and output data
-        delays = size(target,1);
-        for delay = 1:delays
-            c = corrcoef(target(delay,:),output(delay,:));
-            d(delay) = c(1,2)^2;
-        end
-        perf = sum(d);
-        end
-        
-    end
+    % methods (Static)
+    %     function perf = MSE(target, output)
+    %     %Compute the Mean Squared Error given target and output data.
+    %     perf = mean((target-output).^2);
+    %     end
+    % 
+    %     function [perf,d] = MCscore(target, output)
+    %     %Compute the score for the Memory Capacity task, given target and output data
+    %     delays = size(target,1);
+    %     for delay = 1:delays
+    %         c = corrcoef(target(delay,:),output(delay,:));
+    %         d(delay) = c(1,2)^2;
+    %     end
+    %     perf = sum(d);
+    %     end
+    % 
+    % end
     
     
     methods (Access = private)
@@ -354,7 +354,7 @@ classdef DeepESN < handle
         %Converts the state representation of the deep reservoir from a layer-wise organization to a
         %global representation, in which at each time step the states of all layers are concatenated
         %in a row-wise fashion
-        
+
         Nt = size(states{1},2); %number of time steps
         X = zeros(self.Nl * self.Nr,Nt); %this matrix will contain the input for the readout
         %i.e., for each time step (column): the states computed at each layer of the reservoir
