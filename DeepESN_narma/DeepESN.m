@@ -144,9 +144,14 @@ classdef DeepESN < handle
                     end
                     self.state{layer} = (1-self.leaking_rate) * x + self.f(input_part + self.W{layer} * x);
                     self.run_states{layer}(:,t) = self.state{layer};
+                    self.l_state{layer}(:,t) = self.state{layer};
+                    
                     old_state{layer} = self.state{layer};
                 end
             end
+            % for layer = 1:self.Nl
+            %     writematrix(self.l_state{layer}, "1state_"+ num2str(layer) + ".csv");
+            % end
             states = self.run_states;
             end
     
@@ -220,7 +225,6 @@ classdef DeepESN < handle
     %     end
     % end
 
-
 %         function NRMSE = getErr(target, output)
 %     % Set up initial parameters
 %     num_time_series = size(target, 2); % Assume target and output have the same length
@@ -253,36 +257,41 @@ classdef DeepESN < handle
 %                     min(target(:, series)));
 %         end
     methods (Static)
-        function nrmse_values = getErr(target, output)
+        function mean_nrmse_values = getErr(target, output)
             %Compute the Mean Squared Error given target and output data.
             target1 = target;
             output1 = output;
             [~, time_series] = size(target1);
             nrmse_values = zeros(1, time_series);
             mse_values = mean((target1 - output1).^2);
+            mean_nrmse_values = 0;
             for i = 1:time_series
                 mean_value = mean(target1(:, i));
                 rmse_value = sqrt(mse_values);
                 nrmse_values(i) = rmse_value / mean_value;
             end
+            mean_nrmse_values = mean(nrmse_values);
 
-            plot(1:1000,target(1,:))
-            hold on
-            plot(1:1000,output(1,:))
-            title('output'); legend('target','output');
+            % variable_type = class(mean_nrmse_values);
+            % disp(variable_type);
 
-                % plot(nrmse_values);
-                % title('NRMSE Plot');
-                % xlabel('Time Series');
-                % ylabel('NRMSE Value');
+            % plot output and target
+            % plot(1:1000, target(1,:), 'LineWidth', 2)
+            % hold on
+            % plot(1:1000, output(1,:), 'LineWidth', 2)
+            % title('output', 'FontSize', 24)
+            % legend('target', 'output', 'FontSize', 24)
+
+            %Nrmse plot
+            % hold on
+            % plot(nrmse_values, 'LineWidth', 2);
+            % title('NRMSE Plot', 'FontSize', 24);
+            % xlabel('Time Series', 'FontSize', 24);
+            % ylabel('NRMSE Value', 'FontSize', 24);
         end
     end
         
 
-
-
-    
-    
     methods (Access = private)
         function X = shallow_states(self,states)
         

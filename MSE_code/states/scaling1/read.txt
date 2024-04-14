@@ -1,0 +1,6 @@
+ -- Parameter for confirm -- 
+   Nr: 10
+   Nl: 10
+   Input scaling: 1.00
+   Rho values: 0.90
+   Mean NARMA score: 0.026
