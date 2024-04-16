@@ -18,9 +18,9 @@ for layer = 1:10
 
     %%%------各層の状態をMSEかけた図を作成-----------%%%%%
     % scaling0.1
-    input(:,:) = readmatrix(fullfile('states/scaling01/', ['state_' num2str(layer) '.csv']));
+    % input(:,:) = readmatrix(fullfile('states/scaling01/', ['state_' num2str(layer) '.csv']));
     %scaling1
-    % input(:,:) = readmatrix(fullfile('states/scaling1/', ['1state_' num2str(layer) '.csv']));
+    input(:,:) = readmatrix(fullfile('states/scaling1/', ['1state_' num2str(layer) '.csv']));
     %input2(:,:) = readmatrix(append('afile', num2str(v), '.csv'));
     %%%---------------------------------------------%%%%%
 
@@ -53,13 +53,21 @@ for layer = 1:10
     % % plot-MSE-each-layer====
 end
 %% visual 2 k(layer,factor)
+
+max_values_per_column = max(k);
+min_values_per_column = min(k);
+max_value = max(max_values_per_column);
+min_value = min(min_values_per_column);
+
 for i = 1:20
-    
+
     subplot(4,5,i)
     errorbar(1:10, k(:,i), err(:,i),'LineWidth',2);
+
+
     titename = append('scalefactor=',num2str(i));
     title(titename,'FontSize',15)
-    %     ylim([0.4 2.5])
+    ylim([min_value max_value])
     xlim([1 10])
     xlabel('layer')
     ylabel('SampEn')
@@ -74,6 +82,11 @@ for i = 1:20
     %     saveas(gcf,FileName);
 
 end
+
+
+
+
+
 
 
 
