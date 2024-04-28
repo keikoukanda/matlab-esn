@@ -132,8 +132,8 @@ classdef DeepESN < handle
                 for layer = 1:self.Nl
                     % layer - layer under consideration
                     x = old_state{layer}; %this plays the role of previous state
-                    u = [];
-                    input_part = [];
+                    % u = [];
+                    % input_part = [];
                     if layer == 1
                         u = input(1,t);
                         input_part = self.Win * [u;self.bias];
@@ -264,7 +264,7 @@ classdef DeepESN < handle
             [~, time_series] = size(target1);
             nrmse_values = zeros(1, time_series);
             mse_values = mean((target1 - output1).^2);
-            mean_nrmse_values = 0;
+            % mean_nrmse_values = 0;
             for i = 1:time_series
                 mean_value = mean(target1(:, i));
                 rmse_value = sqrt(mse_values);
